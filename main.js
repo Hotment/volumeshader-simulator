@@ -3,10 +3,115 @@ const kernelInput = document.getElementById("kernel");
 const toggleRenderBtn = document.getElementById("toggleRender");
 const presetList = document.getElementById("presetList");
 const savePresetBtn = document.getElementById("savePreset");
-const loadPresetBtn = document.getElementById("loadPreset");
 const deletePresetBtn = document.getElementById("deletePreset");
 const speedSlider = document.getElementById("rotationSpeed");
 const speedValue = document.getElementById("speedValue");
+const defaultPresets = {
+    "Very Simple Box": `float boxDist(vec3 p, vec3 b) {
+    vec3 d = abs(p) - b;
+    return length(max(d, 0.0));
+}
+  
+float kernal(vec3 ver) {
+    return 0.0000001 - boxDist(ver, vec3(1.0));
+}`,
+    "Very Simple": `float boxDist(vec3 p, vec3 b) {
+    vec3 d = abs(p) - b;
+    return length(max(d, 0.0));
+}
+
+float kernal(vec3 ver) {
+    return 1.0 - boxDist(ver, vec3(1.0));
+}`,
+    "Simple": `float boxDist(vec3 p, vec3 b) {
+    vec3 d = abs(p) - b;
+    return length(max(d, 0.0));
+}
+
+float kernal(vec3 ver) {
+    vec3 a = ver;
+    float b = 0.0;
+    for (int i = 0; i < 2; i++) {
+        b = dot(a, a);
+        if (b > 36.0) break;
+        a = a * clamp(1.1 - b * 0.04, 0.6, 1.1) + ver * 0.25;
+    }
+    return 1.0 - boxDist(a, vec3(1.0));
+}`,
+    "Base": `float kernal(vec3 ver) {
+    vec3 a;
+    float b,c,d,e;
+    a=ver;
+    for(int i=0;i<5;i++){
+        b=length(a);
+        c=atan(a.y,a.x)*8.0;
+        e=1.0/b;
+        d=acos(a.z/b)*8.0;
+        b=pow(b,8.0);
+        a=vec3(b*sin(d)*cos(c),b*sin(d)*sin(c),b*cos(d))+ver;
+        if(b>6.0){
+            break;
+        }
+    }   
+    return 4.0-a.x*a.x-a.y*a.y-a.z*a.z;
+}`,
+    "Hard": `float kernal(vec3 ver) {
+    vec3 a = ver;
+    float b, c, d, e, f, g;
+  
+    for (int i = 0; i < 25; i++) {
+        b = length(a) + 0.001;
+        c = atan(a.y, a.x) * 12.0 + sin(a.z * 5.0);
+        d = acos(clamp(a.z / b, -1.0, 1.0)) * 12.0 + cos(a.x * 5.0);
+        e = min(pow(b, 4.0 + sin(float(i)) * 0.5), 20.0);
+        f = sin(c * 0.5 + sin(d * 0.25 + cos(b * 2.0)));
+        g = cos(d * 0.5 + cos(c * 0.25 + sin(b * 2.0)));
+  
+        a = vec3(
+            e * sin(d) * cos(c) + f * 0.1,
+            e * sin(d) * sin(c) + g * 0.1,
+            e * cos(d) + f * g * 0.05
+        ) + ver * (0.3 + 0.3 * sin(float(i)));
+  
+        if (e > 10.0) break;
+    }
+  
+    float dist = 4.0 - dot(a, a);
+    return dist;
+}`,
+    "Extreme": `float kernal(vec3 ver) {
+    vec3 a = ver;
+    float b, c, d, e, f, g, h;
+  
+    for (int i = 0; i < 80; i++) {
+        b = length(a) + 0.0001;
+  
+        c = atan(a.y, a.x) * 24.0 + sin(a.z * 9.0 + cos(b * 2.0));
+        d = acos(clamp(a.z / b, -1.0, 1.0)) * 24.0 + cos(a.x * 9.0 + sin(b * 3.0));
+  
+        e = pow(b, 9.0 + sin(float(i * 2)) * 1.5);
+  
+        f = sin(c * 1.5 + sin(d * 0.75 + cos(b * 3.0)));
+        g = cos(d * 1.5 + cos(c * 0.75 + sin(b * 3.0)));
+  
+        h = sin(dot(a, a) * 5.0 + float(i) * 0.25);
+  
+        a = vec3(
+            e * sin(d) * cos(c) + f * g * h * 0.4,
+            e * sin(d) * sin(c) + f * g * h * 0.4,
+            e * cos(d) + f * g * h * 0.4
+        ) + ver * (0.8 + 0.6 * sin(float(i) + dot(ver, a)));
+    }
+  
+    float dist = 0.5 - dot(a, a);
+    float sparkle = sin(dot(a, a) * 20.0) * 0.1;
+    return dist + sparkle;
+}`
+  };  
+if (!localStorage.getItem('presets')) {
+    localStorage.setItem('presets', JSON.stringify(defaultPresets));
+}
+
 
 speedSlider.addEventListener("input", () => {
     rotationSpeed = parseInt(speedSlider.value, 10);
@@ -14,6 +119,10 @@ speedSlider.addEventListener("input", () => {
 });
 
 toggleRenderBtn.addEventListener("click", () => {
+    if (!hasHWA){
+        alert("Please enable Hardware Acceleration to use this tool.")
+        return;
+    }
     isRendering = !isRendering;
     totalFrames = 0;
     renderStartTime = performance.now();
@@ -53,7 +162,7 @@ savePresetBtn.addEventListener("click", () => {
     updatePresetList();
 });
 
-loadPresetBtn.addEventListener("click", () => {
+presetList.addEventListener("change", () => {
     const name = presetList.value;
     const presets = getPresets();
     if (presets[name]) {
@@ -161,28 +270,19 @@ var ang2 = 0.4;
 var cenx = 0.0;
 var ceny = 0.0;
 var cenz = 0.0;
-var KERNEL = "float kernal(vec3 ver) {\n" +
-    "    vec3 a;\n" +
-    "    float b,c,d,e;\n" +
-    "    a=ver;\n" +
-    "    for(int i=0;i<5;i++){\n" +
-    "        b=length(a);\n" +
-    "        c=atan(a.y,a.x)*8.0;\n" +
-    "        e=1.0/b;\n" +
-    "        d=acos(a.z/b)*8.0;\n" +
-    "        b=pow(b,8.0);\n" +
-    "        a=vec3(b*sin(d)*cos(c),b*sin(d)*sin(c),b*cos(d))+ver;\n" +
-    "        if(b>6.0){\n" +
-    "            break;\n" +
-    "        }\n" +
-    "    }\n" +
-    "    return 4.0-a.x*a.x-a.y*a.y-a.z*a.z;\n" +
-    "}";
+var KERNEL = `float boxDist(vec3 p, vec3 b) {
+    vec3 d = abs(p) - b;
+    return length(max(d, 0.0));
+}
+  
+float kernal(vec3 ver) {
+    return 0.0000001 - boxDist(ver, vec3(1.0));
+}`;
 var vertshade;
 var fragshader;
 var shaderProgram;
 function ontimer() {
-    ang1+=rotationSpeed/5000;
+    if (isRendering) ang1+=rotationSpeed/5000;
     draw();
     window.requestAnimationFrame(ontimer);
 }
