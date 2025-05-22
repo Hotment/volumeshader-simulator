@@ -45,7 +45,7 @@ h1 {
 }
 
 .controls {
-    position: relative; /* ADD THIS */
+    position: relative;
     width: 40%;
     max-width: 100%;
     padding: 2rem;

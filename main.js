@@ -572,6 +572,10 @@ window.onload = function () {
     window.requestAnimationFrame(ontimer);
     document.getElementById("kernel").value = KERNEL;
     document.getElementById("apply").addEventListener("click", function() {
+        if (!hasHWA){
+            alert("Please enable Hardware Acceleration to use this tool.")
+            return;
+        }
         totalFrames = 0;
         renderStartTime = performance.now();
         frameTimes = [];
