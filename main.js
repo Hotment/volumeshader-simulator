@@ -1,3 +1,38 @@
+let mobile = false
+if (window.innerWidth < 830 || window.innerHeight < 680) {
+    document.documentElement.innerHTML = `
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL Raymarcher</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            text-align: center;
+            background: #111;
+            color: #fff;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+        p {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚫 Mobile Not Supported</h1>
+    <p>This site doesn't work on mobile... yet. Mobile support is coming soon, so hold your tiny horses.</p>
+    <script src="main.js"></script>
+</body>
+</html>
+    `;
+    mobile = true
+}
+
 let isRendering = false;
 const kernelInput = document.getElementById("kernel");
 const toggleRenderBtn = document.getElementById("toggleRender");
@@ -282,6 +317,7 @@ var vertshade;
 var fragshader;
 var shaderProgram;
 function ontimer() {
+    if (mobile) return;
     if (isRendering) ang1+=rotationSpeed/5000;
     draw();
     window.requestAnimationFrame(ontimer);
