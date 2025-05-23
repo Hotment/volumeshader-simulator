@@ -1,24 +1,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>WebGL Raymarcher</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>WebGL Raymarcher</h1>
-    <div id="fpsCounter">FPS: 0 | Avg: 0 | 1% Low: 0</div>
-    <div class="main">
+   <h1>WebGL Raymarcher</h1>
+   <div id="fpsCounter">FPS: 0 | Avg: 0 | 1% Low: 0</div>
+   <div class="main">
     <div class="render-area">
         <canvas id="c1" width="1024" height="1024"></canvas>
     </div>
     <button id="collapseButton">Collapse Menu</button>
     <div class="controls" id="right-panel">
-        <div class="panels" style="display: flex; gap: 1rem;">
+        <div class="panels">
             <textarea id="kernel" spellcheck="false" placeholder="Type your shader kernel code here..."></textarea>
             <div class="btn-panel">
                 <h1>Presets:</h1>
-                <select id="presetList">
+                <select id="presetList" title="Preset">
                     <option disabled selected>Select a preset</option>
                 </select>
                 <button id="loadPreset">Load</button>
