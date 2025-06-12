@@ -461,9 +461,7 @@ document.getElementById("collapseButton").addEventListener("click", () => {
     panel.classList.toggle("collapsed");
 
     // Flip arrow
-    btn.textContent = panel.classList.contains("collapsed") ? "Open Menu" : "Collapse\nMenu";
     btn.classList.toggle("collapsed", panel.classList.contains("collapsed"));
-    btn.classList.toggle("expanded", !panel.classList.contains("collapsed"));
 });
 
 function draw() {

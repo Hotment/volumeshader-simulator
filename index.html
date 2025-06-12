@@ -6,33 +6,52 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-   <h1>WebGL Raymarcher</h1>
    <div id="fpsCounter">FPS: 0 | Avg: 0 | 1% Low: 0</div>
-   <div class="main">
+   
+   <div class="main-container">
     <div class="render-area">
         <canvas id="c1" width="1024" height="1024"></canvas>
     </div>
-    <button id="collapseButton">Collapse Menu</button>
+
     <div class="controls" id="right-panel">
-        <div class="panels">
-            <textarea id="kernel" spellcheck="false" placeholder="Type your shader kernel code here..."></textarea>
-            <div class="btn-panel">
-                <h1>Presets:</h1>
-                <select id="presetList" title="Preset">
-                    <option disabled selected>Select a preset</option>
-                </select>
-                <button id="loadPreset">Load</button>
-                <button id="deletePreset">Delete</button>
-                <button id="savePreset">Save Current</button>
+        <button id="collapseButton" title="Toggle Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <div class="controls-content">
+            <h1 class="panel-title">WebGL Raymarcher</h1>
+            
+            <div class="control-section">
+                <h2>Shader Kernel</h2>
+                <textarea id="kernel" spellcheck="false" placeholder="Type your GLSL kernel code here..."></textarea>
+                <div class="kernel-buttons">
+                    <button id="apply">Apply Kernel</button>
+                    <button id="cancle" class="btn-secondary">Reset</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h2>Presets</h2>
+                <div class="preset-controls">
+                    <select id="presetList" title="Preset">
+                        <option disabled selected>Select a preset</option>
+                    </select>
+                    <button id="loadPreset">Load</button>
+                    <button id="deletePreset" class="btn-secondary">Delete</button>
+                </div>
+                <button id="savePreset" class="btn-full-width">Save Current as Preset</button>
+            </div>
+
+            <div class="control-section">
+                <h2>Controls</h2>
                 <button id="toggleRender">Start Rendering</button>
                 <label for="rotationSpeed">Rotation Speed: <span id="speedValue">50</span></label>
-                <input type="range" id="rotationSpeed" min="0" max="100" value="50">
+                <input type="range" id="rotationSpeed" min="0" max="100" value="50" title="Rotation Speed">
             </div>
         </div>
-        <button id="apply">Set Kernel</button>
-        <button id="cancle">Reset</button>
     </div>
-    </div>
+   </div>
     <script src="main.js"></script>
 </body>
 </html>
