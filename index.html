@@ -32,12 +32,11 @@
             </div>
 
             <div class="control-section">
-                <h2>Presets</h2>
+                <h2>Live Presets</h2>
                 <div class="preset-controls">
                     <select id="presetList" title="Preset">
-                        <option disabled selected>Select a preset</option>
+                        <option disabled selected>Select a preset to apply</option>
                     </select>
-                    <button id="loadPreset">Load</button>
                     <button id="deletePreset" class="btn-secondary">Delete</button>
                 </div>
                 <button id="savePreset" class="btn-full-width">Save Current as Preset</button>
@@ -45,7 +44,7 @@
 
             <div class="control-section">
                 <h2>Controls</h2>
-                <button id="toggleRender">Start Rendering</button>
+                <button id="toggleRender" class="start">Start Rendering</button>
                 <label for="rotationSpeed">Rotation Speed: <span id="speedValue">50</span></label>
                 <input type="range" id="rotationSpeed" min="0" max="100" value="50" title="Rotation Speed">
             </div>

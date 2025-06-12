@@ -5,6 +5,8 @@
     --bg-tertiary: #1a1c20;
     --accent-primary: #00aaff;
     --accent-secondary: #00f2ea;
+    --accent-primary-g: #21c900;
+    --accent-secondary-g: #75f55b;
     --text-primary: #e6e6e6;
     --text-secondary: #8a9199;
     --border-color: #2c2f35;
@@ -125,6 +127,12 @@ button {
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+
+
+#toggleRender.start {
+    background: linear-gradient(135deg, var(--accent-secondary-g), var(--accent-primary-g));
 }
 
 button:hover {

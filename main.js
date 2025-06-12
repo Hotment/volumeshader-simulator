@@ -143,6 +143,153 @@ float kernal(vec3 ver) {
     return dist + sparkle;
 }`
   };  
+  var FSHADER_SOURCE =
+  "#version 100 \n" +
+  "#define PI 3.14159265358979324\n" +
+  "#define M_L 0.3819660113\n" +
+  "#define M_R 0.6180339887\n" +
+  "#define MAXR 8\n" +
+  "#define SOLVER 8\n" +
+  "precision highp float;\n" +
+  "float kernal(vec3 ver)\n;" +
+  "uniform vec3 right, forward, up, origin;\n" +
+  "varying vec3 dir, localdir;\n" +
+  "uniform float len;\n" +
+  "vec3 ver;\n" +
+  "int sign;"+
+  "float v, v1, v2;\n" +
+  "float r1, r2, r3, r4, m1, m2, m3, m4;\n" +
+  "vec3 n, reflect;\n" +
+  "const float step = 0.002;\n" +
+  "vec3 color;\n" +
+  "void main() {\n" +
+  "   color.r=0.0;\n" +
+  "   color.g=0.0;\n" +
+  "   color.b=0.0;\n" +
+  "   sign=0;"+
+  "   v1 = kernal(origin + dir * (step*len));\n" +
+  "   v2 = kernal(origin);\n" +
+  "   for (int k = 2; k < 1002; k++) {\n" +
+  "      ver = origin + dir * (step*len*float(k));\n" +
+  "      v = kernal(ver);\n" +
+  "      if (v > 0.0 && v1 < 0.0) {\n" +
+  "         r1 = step * len*float(k - 1);\n" +
+  "         r2 = step * len*float(k);\n" +
+  "         m1 = kernal(origin + dir * r1);\n" +
+  "         m2 = kernal(origin + dir * r2);\n" +
+  "         for (int l = 0; l < SOLVER; l++) {\n" +
+  "            r3 = r1 * 0.5 + r2 * 0.5;\n" +
+  "            m3 = kernal(origin + dir * r3);\n" +
+  "            if (m3 > 0.0) {\n" +
+  "               r2 = r3;\n" +
+  "               m2 = m3;\n" +
+  "            }\n" +
+  "            else {\n" +
+  "               r1 = r3;\n" +
+  "               m1 = m3;\n" +
+  "            }\n" +
+  "         }\n" +
+  "         if (r3 < 2.0 * len) {\n" +
+  "               sign=1;" +
+  "            break;\n" +
+  "         }\n" +
+  "      }\n" +
+  "      if (v < v1&&v1>v2&&v1 < 0.0 && (v1*2.0 > v || v1 * 2.0 > v2)) {\n" +
+  "         r1 = step * len*float(k - 2);\n" +
+  "         r2 = step * len*(float(k) - 2.0 + 2.0*M_L);\n" +
+  "         r3 = step * len*(float(k) - 2.0 + 2.0*M_R);\n" +
+  "         r4 = step * len*float(k);\n" +
+  "         m2 = kernal(origin + dir * r2);\n" +
+  "         m3 = kernal(origin + dir * r3);\n" +
+  "         for (int l = 0; l < MAXR; l++) {\n" +
+  "            if (m2 > m3) {\n" +
+  "               r4 = r3;\n" +
+  "               r3 = r2;\n" +
+  "               r2 = r4 * M_L + r1 * M_R;\n" +
+  "               m3 = m2;\n" +
+  "               m2 = kernal(origin + dir * r2);\n" +
+  "            }\n" +
+  "            else {\n" +
+  "               r1 = r2;\n" +
+  "               r2 = r3;\n" +
+  "               r3 = r4 * M_R + r1 * M_L;\n" +
+  "               m2 = m3;\n" +
+  "               m3 = kernal(origin + dir * r3);\n" +
+  "            }\n" +
+  "         }\n" +
+  "         if (m2 > 0.0) {\n" +
+  "            r1 = step * len*float(k - 2);\n" +
+  "            r2 = r2;\n" +
+  "            m1 = kernal(origin + dir * r1);\n" +
+  "            m2 = kernal(origin + dir * r2);\n" +
+  "            for (int l = 0; l < SOLVER; l++) {\n" +
+  "               r3 = r1 * 0.5 + r2 * 0.5;\n" +
+  "               m3 = kernal(origin + dir * r3);\n" +
+  "               if (m3 > 0.0) {\n" +
+  "                  r2 = r3;\n" +
+  "                  m2 = m3;\n" +
+  "               }\n" +
+  "               else {\n" +
+  "                  r1 = r3;\n" +
+  "                  m1 = m3;\n" +
+  "               }\n" +
+  "            }\n" +
+  "            if (r3 < 2.0 * len&&r3> step*len) {\n" +
+  "                   sign=1;" +
+  "               break;\n" +
+  "            }\n" +
+  "         }\n" +
+  "         else if (m3 > 0.0) {\n" +
+  "            r1 = step * len*float(k - 2);\n" +
+  "            r2 = r3;\n" +
+  "            m1 = kernal(origin + dir * r1);\n" +
+  "            m2 = kernal(origin + dir * r2);\n" +
+  "            for (int l = 0; l < SOLVER; l++) {\n" +
+  "               r3 = r1 * 0.5 + r2 * 0.5;\n" +
+  "               m3 = kernal(origin + dir * r3);\n" +
+  "               if (m3 > 0.0) {\n" +
+  "                  r2 = r3;\n" +
+  "                  m2 = m3;\n" +
+  "               }\n" +
+  "               else {\n" +
+  "                  r1 = r3;\n" +
+  "                  m1 = m3;\n" +
+  "               }\n" +
+  "            }\n" +
+  "            if (r3 < 2.0 * len&&r3> step*len) {\n" +
+  "                   sign=1;" +
+  "               break;\n" +
+  "            }\n" +
+  "         }\n" +
+  "      }\n" +
+  "      v2 = v1;\n" +
+  "      v1 = v;\n" +
+  "   }\n" +
+  "   if (sign==1) {\n" +
+  "      ver = origin + dir*r3 ;\n" +
+      "       r1=ver.x*ver.x+ver.y*ver.y+ver.z*ver.z;" +
+  "      n.x = kernal(ver - right * (r3*0.00025)) - kernal(ver + right * (r3*0.00025));\n" +
+  "      n.y = kernal(ver - up * (r3*0.00025)) - kernal(ver + up * (r3*0.00025));\n" +
+  "      n.z = kernal(ver + forward * (r3*0.00025)) - kernal(ver - forward * (r3*0.00025));\n" +
+  "      r3 = n.x*n.x+n.y*n.y+n.z*n.z;\n" +
+  "      n = n * (1.0 / sqrt(r3));\n" +
+  "      ver = localdir;\n" +
+  "      r3 = ver.x*ver.x+ver.y*ver.y+ver.z*ver.z;\n" +
+  "      ver = ver * (1.0 / sqrt(r3));\n" +
+  "      reflect = n * (-2.0*dot(ver, n)) + ver;\n" +
+  "      r3 = reflect.x*0.276+reflect.y*0.920+reflect.z*0.276;\n" +
+  "      r4 = n.x*0.276+n.y*0.920+n.z*0.276;\n" +
+  "      r3 = max(0.0,r3);\n" +
+  "      r3 = r3 * r3*r3*r3;\n" +
+  "      r3 = r3 * 0.45 + r4 * 0.25 + 0.3;\n" +
+      "      n.x = sin(r1*10.0)*0.5+0.5;\n" +
+      "      n.y = sin(r1*10.0+2.05)*0.5+0.5;\n" +
+      "      n.z = sin(r1*10.0-2.05)*0.5+0.5;\n" +
+  "      color = n*r3;\n" +
+  "   }\n" +
+  "   gl_FragColor = vec4(color.x, color.y, color.z, 1.0);" +
+  "}";
+
 if (!localStorage.getItem('presets')) {
     localStorage.setItem('presets', JSON.stringify(defaultPresets));
 }
@@ -162,10 +309,10 @@ toggleRenderBtn.addEventListener("click", () => {
     totalFrames = 0;
     renderStartTime = performance.now();
     frameTimes = [];
+    toggleRenderBtn.classList.toggle("start", false);
     toggleRenderBtn.textContent = isRendering ? "Pause" : "Resume";
 });
 
-// ---- Preset Management ----
 
 function getPresets() {
     const json = localStorage.getItem("presets");
@@ -178,7 +325,7 @@ function setPresets(presets) {
 
 function updatePresetList() {
     const presets = getPresets();
-    presetList.innerHTML = `<option disabled selected>Select a preset</option>`;
+    presetList.innerHTML = `<option disabled selected>Select a preset to apply</option>`;
     for (const name in presets) {
         const option = document.createElement("option");
         option.value = name;
@@ -202,20 +349,25 @@ presetList.addEventListener("change", () => {
     const presets = getPresets();
     if (presets[name]) {
         kernelInput.value = presets[name];
+        applyKernel();
     }
 });
 
 deletePresetBtn.addEventListener("click", () => {
     const name = presetList.value;
+    if (!name || name === "Select a preset to apply") return;
     const presets = getPresets();
     if (presets[name]) {
-        delete presets[name];
-        setPresets(presets);
-        updatePresetList();
+        if (confirm(`Are you sure you want to delete the preset "${name}"?`)) {
+            delete presets[name];
+            setPresets(presets);
+            updatePresetList();
+            kernelInput.value = "";
+        }
     }
 });
 
-updatePresetList(); // Initial call to populate dropdown
+updatePresetList();
 
 const fpsCounter = document.getElementById("fpsCounter");
 
@@ -226,7 +378,7 @@ const sorted = [];
 
 let fpsLastUpdate = performance.now();
 let renderStartTime = performance.now();
-const fpsInterval = 10; // update rate
+const fpsInterval = 10; 
 
 let frameTimes = [];
 const maxSamples = 600;
@@ -239,7 +391,7 @@ function updateFPS() {
 
     frameTimes.push(delta);
     if (frameTimes.length > maxSamples) {
-        frameTimes.shift(); // keep recent frame times only
+        frameTimes.shift();
     }
 
     frameCount++;
@@ -251,10 +403,8 @@ function updateFPS() {
     const elapsed = now - fpsLastUpdate;
 
     if (elapsed >= fpsInterval) {
-        // Instantaneous FPS
         fps = Math.round((frameCount * 1000) / elapsed);
 
-        // Average FPS
         const totalTime = (now - renderStartTime) / 1000;
         const avgFps = Math.round(totalFrames / totalTime);
 
@@ -459,8 +609,6 @@ document.getElementById("collapseButton").addEventListener("click", () => {
     const btn = document.getElementById("collapseButton");
 
     panel.classList.toggle("collapsed");
-
-    // Flip arrow
     btn.classList.toggle("collapsed", panel.classList.contains("collapsed"));
 });
 
@@ -482,6 +630,46 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     gl.finish();
 }
+
+function updateTextareaMaxHeight() {
+    const controlsContent = document.querySelector('.controls-content');
+    if (!controlsContent) return;
+
+    const kernelTextarea = document.getElementById('kernel');
+    const panelTitle = document.querySelector('.panel-title');
+    const controlSections = document.querySelectorAll('.control-section');
+
+    const panelStyle = window.getComputedStyle(controlsContent);
+    const gap = parseFloat(panelStyle.gap) || 0;
+    
+    let otherElementsHeight = 0;
+
+    if (panelTitle) {
+        otherElementsHeight += panelTitle.offsetHeight+90;
+    }
+
+    controlSections.forEach(section => {
+        Array.from(section.children).forEach(child => {
+            if (child.id !== 'kernel') {
+                otherElementsHeight += child.offsetHeight;
+            }
+        });
+        const sectionStyle = window.getComputedStyle(section);
+        otherElementsHeight += parseFloat(sectionStyle.marginTop) + parseFloat(sectionStyle.marginBottom);
+    });
+
+    const topLevelElements = Array.from(controlsContent.children);
+    if (topLevelElements.length > 1) {
+        otherElementsHeight += (topLevelElements.length -1) * gap;
+    }
+
+    const panelPadding = parseFloat(panelStyle.paddingTop) + parseFloat(panelStyle.paddingBottom);
+    
+    const availableHeight = controlsContent.clientHeight - otherElementsHeight - panelPadding;
+
+    kernelTextarea.style.maxHeight = `${Math.max(100, availableHeight)}px`;
+}
+
 window.onresize = function () {
     cx = document.body.clientWidth;
     cy = document.body.clientHeight;
@@ -491,9 +679,36 @@ window.onresize = function () {
     else{
         cy=cx;
     }
-    // document.getElementById("render-area").style.width=1024+"px";
-    // document.getElementById("render-area").style.height=1024+"px";
-    // document.getElementById("render-area").style.transform="scale("+cx/1024+","+cy/1024+")";
+    updateTextareaMaxHeight();
+}
+
+function applyKernel() {
+    if (!hasHWA){
+        alert("Please enable Hardware Acceleration to use this tool.")
+        return;
+    }
+    totalFrames = 0;
+    renderStartTime = performance.now();
+    frameTimes = [];
+
+    KERNEL = document.getElementById("kernel").value;
+    gl.shaderSource(fragshader, FSHADER_SOURCE + KERNEL);
+    gl.compileShader(fragshader);
+    var infof = gl.getShaderInfoLog(fragshader);
+    gl.linkProgram(shaderProgram);
+    gl.useProgram(shaderProgram);
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        var info = gl.getProgramInfoLog(shaderProgram);
+        alert(infof + info);
+    }
+    glposition = gl.getAttribLocation(shaderProgram, 'position');
+    glright = gl.getUniformLocation(shaderProgram, 'right');
+    glforward = gl.getUniformLocation(shaderProgram, 'forward');
+    glup = gl.getUniformLocation(shaderProgram, 'up');
+    glorigin = gl.getUniformLocation(shaderProgram, 'origin');
+    glx = gl.getUniformLocation(shaderProgram, 'x');
+    gly = gl.getUniformLocation(shaderProgram, 'y');
+    gllen = gl.getUniformLocation(shaderProgram, 'len');
 }
 
 window.onload = function () {
@@ -505,9 +720,6 @@ window.onload = function () {
     else{
         cy=cx;
     }
-    // document.getElementById("render-area").style.width=1024+"px";
-    // document.getElementById("render-area").style.height=1024+"px";
-    // document.getElementById("render-area").style.transform="scale("+cx/1024+","+cy/1024+")";
     var positions = [-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0];
     var VSHADER_SOURCE =
         "#version 100 \n"+
@@ -523,152 +735,6 @@ window.onload = function () {
         "   localdir.y = position.y*y;" +
         "   localdir.z = -1.0;" +
         "} ";
-    var FSHADER_SOURCE =
-        "#version 100 \n" +
-        "#define PI 3.14159265358979324\n" +
-        "#define M_L 0.3819660113\n" +
-        "#define M_R 0.6180339887\n" +
-        "#define MAXR 8\n" +
-        "#define SOLVER 8\n" +
-        "precision highp float;\n" +
-        "float kernal(vec3 ver)\n;" +
-        "uniform vec3 right, forward, up, origin;\n" +
-        "varying vec3 dir, localdir;\n" +
-        "uniform float len;\n" +
-        "vec3 ver;\n" +
-        "int sign;"+
-        "float v, v1, v2;\n" +
-        "float r1, r2, r3, r4, m1, m2, m3, m4;\n" +
-        "vec3 n, reflect;\n" +
-        "const float step = 0.002;\n" +
-        "vec3 color;\n" +
-        "void main() {\n" +
-        "   color.r=0.0;\n" +
-        "   color.g=0.0;\n" +
-        "   color.b=0.0;\n" +
-        "   sign=0;"+
-        "   v1 = kernal(origin + dir * (step*len));\n" +
-        "   v2 = kernal(origin);\n" +
-        "   for (int k = 2; k < 1002; k++) {\n" +
-        "      ver = origin + dir * (step*len*float(k));\n" +
-        "      v = kernal(ver);\n" +
-        "      if (v > 0.0 && v1 < 0.0) {\n" +
-        "         r1 = step * len*float(k - 1);\n" +
-        "         r2 = step * len*float(k);\n" +
-        "         m1 = kernal(origin + dir * r1);\n" +
-        "         m2 = kernal(origin + dir * r2);\n" +
-        "         for (int l = 0; l < SOLVER; l++) {\n" +
-        "            r3 = r1 * 0.5 + r2 * 0.5;\n" +
-        "            m3 = kernal(origin + dir * r3);\n" +
-        "            if (m3 > 0.0) {\n" +
-        "               r2 = r3;\n" +
-        "               m2 = m3;\n" +
-        "            }\n" +
-        "            else {\n" +
-        "               r1 = r3;\n" +
-        "               m1 = m3;\n" +
-        "            }\n" +
-        "         }\n" +
-        "         if (r3 < 2.0 * len) {\n" +
-        "               sign=1;" +
-        "            break;\n" +
-        "         }\n" +
-        "      }\n" +
-        "      if (v < v1&&v1>v2&&v1 < 0.0 && (v1*2.0 > v || v1 * 2.0 > v2)) {\n" +
-        "         r1 = step * len*float(k - 2);\n" +
-        "         r2 = step * len*(float(k) - 2.0 + 2.0*M_L);\n" +
-        "         r3 = step * len*(float(k) - 2.0 + 2.0*M_R);\n" +
-        "         r4 = step * len*float(k);\n" +
-        "         m2 = kernal(origin + dir * r2);\n" +
-        "         m3 = kernal(origin + dir * r3);\n" +
-        "         for (int l = 0; l < MAXR; l++) {\n" +
-        "            if (m2 > m3) {\n" +
-        "               r4 = r3;\n" +
-        "               r3 = r2;\n" +
-        "               r2 = r4 * M_L + r1 * M_R;\n" +
-        "               m3 = m2;\n" +
-        "               m2 = kernal(origin + dir * r2);\n" +
-        "            }\n" +
-        "            else {\n" +
-        "               r1 = r2;\n" +
-        "               r2 = r3;\n" +
-        "               r3 = r4 * M_R + r1 * M_L;\n" +
-        "               m2 = m3;\n" +
-        "               m3 = kernal(origin + dir * r3);\n" +
-        "            }\n" +
-        "         }\n" +
-        "         if (m2 > 0.0) {\n" +
-        "            r1 = step * len*float(k - 2);\n" +
-        "            r2 = r2;\n" +
-        "            m1 = kernal(origin + dir * r1);\n" +
-        "            m2 = kernal(origin + dir * r2);\n" +
-        "            for (int l = 0; l < SOLVER; l++) {\n" +
-        "               r3 = r1 * 0.5 + r2 * 0.5;\n" +
-        "               m3 = kernal(origin + dir * r3);\n" +
-        "               if (m3 > 0.0) {\n" +
-        "                  r2 = r3;\n" +
-        "                  m2 = m3;\n" +
-        "               }\n" +
-        "               else {\n" +
-        "                  r1 = r3;\n" +
-        "                  m1 = m3;\n" +
-        "               }\n" +
-        "            }\n" +
-        "            if (r3 < 2.0 * len&&r3> step*len) {\n" +
-        "                   sign=1;" +
-        "               break;\n" +
-        "            }\n" +
-        "         }\n" +
-        "         else if (m3 > 0.0) {\n" +
-        "            r1 = step * len*float(k - 2);\n" +
-        "            r2 = r3;\n" +
-        "            m1 = kernal(origin + dir * r1);\n" +
-        "            m2 = kernal(origin + dir * r2);\n" +
-        "            for (int l = 0; l < SOLVER; l++) {\n" +
-        "               r3 = r1 * 0.5 + r2 * 0.5;\n" +
-        "               m3 = kernal(origin + dir * r3);\n" +
-        "               if (m3 > 0.0) {\n" +
-        "                  r2 = r3;\n" +
-        "                  m2 = m3;\n" +
-        "               }\n" +
-        "               else {\n" +
-        "                  r1 = r3;\n" +
-        "                  m1 = m3;\n" +
-        "               }\n" +
-        "            }\n" +
-        "            if (r3 < 2.0 * len&&r3> step*len) {\n" +
-        "                   sign=1;" +
-        "               break;\n" +
-        "            }\n" +
-        "         }\n" +
-        "      }\n" +
-        "      v2 = v1;\n" +
-        "      v1 = v;\n" +
-        "   }\n" +
-        "   if (sign==1) {\n" +
-        "      ver = origin + dir*r3 ;\n" +
-            "       r1=ver.x*ver.x+ver.y*ver.y+ver.z*ver.z;" +
-        "      n.x = kernal(ver - right * (r3*0.00025)) - kernal(ver + right * (r3*0.00025));\n" +
-        "      n.y = kernal(ver - up * (r3*0.00025)) - kernal(ver + up * (r3*0.00025));\n" +
-        "      n.z = kernal(ver + forward * (r3*0.00025)) - kernal(ver - forward * (r3*0.00025));\n" +
-        "      r3 = n.x*n.x+n.y*n.y+n.z*n.z;\n" +
-        "      n = n * (1.0 / sqrt(r3));\n" +
-        "      ver = localdir;\n" +
-        "      r3 = ver.x*ver.x+ver.y*ver.y+ver.z*ver.z;\n" +
-        "      ver = ver * (1.0 / sqrt(r3));\n" +
-        "      reflect = n * (-2.0*dot(ver, n)) + ver;\n" +
-        "      r3 = reflect.x*0.276+reflect.y*0.920+reflect.z*0.276;\n" +
-        "      r4 = n.x*0.276+n.y*0.920+n.z*0.276;\n" +
-        "      r3 = max(0.0,r3);\n" +
-        "      r3 = r3 * r3*r3*r3;\n" +
-        "      r3 = r3 * 0.45 + r4 * 0.25 + 0.3;\n" +
-            "      n.x = sin(r1*10.0)*0.5+0.5;\n" +
-            "      n.y = sin(r1*10.0+2.05)*0.5+0.5;\n" +
-            "      n.z = sin(r1*10.0-2.05)*0.5+0.5;\n" +
-        "      color = n*r3;\n" +
-        "   }\n" +
-        "   gl_FragColor = vec4(color.x, color.y, color.z, 1.0);" +
-        "}";
     gl = canvas.getContext('webgl');
     vertshader = gl.createShader(gl.VERTEX_SHADER);
     fragshader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -705,35 +771,13 @@ window.onload = function () {
     draw();
     window.requestAnimationFrame(ontimer);
     document.getElementById("kernel").value = KERNEL;
-    document.getElementById("apply").addEventListener("click", function() {
-        if (!hasHWA){
-            alert("Please enable Hardware Acceleration to use this tool.")
-            return;
-        }
-        totalFrames = 0;
-        renderStartTime = performance.now();
-        frameTimes = [];
+    
+    document.getElementById("apply").addEventListener("click", applyKernel);
 
-        KERNEL = document.getElementById("kernel").value;
-        gl.shaderSource(fragshader, FSHADER_SOURCE + KERNEL);
-        gl.compileShader(fragshader);
-        var infof = gl.getShaderInfoLog(fragshader);
-        gl.linkProgram(shaderProgram);
-        gl.useProgram(shaderProgram);
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            var info = gl.getProgramInfoLog(shaderProgram);
-            alert(infof + info);
-        }
-        glposition = gl.getAttribLocation(shaderProgram, 'position');
-        glright = gl.getUniformLocation(shaderProgram, 'right');
-        glforward = gl.getUniformLocation(shaderProgram, 'forward');
-        glup = gl.getUniformLocation(shaderProgram, 'up');
-        glorigin = gl.getUniformLocation(shaderProgram, 'origin');
-        glx = gl.getUniformLocation(shaderProgram, 'x');
-        gly = gl.getUniformLocation(shaderProgram, 'y');
-        gllen = gl.getUniformLocation(shaderProgram, 'len');
-    });
     document.getElementById("cancle").addEventListener("click", function() {
         document.getElementById("kernel").value = KERNEL;
     });
+
+    updateTextareaMaxHeight();
+    setTimeout(updateTextareaMaxHeight, 500);
 }
