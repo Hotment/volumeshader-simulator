@@ -57,22 +57,29 @@ canvas {
     display: block;
 }
 
+body.is-resizing {
+    cursor: col-resize;
+    user-select: none;
+}
+
 /* --- Controls Panel --- */
 .controls {
     position: relative;
+    min-width: 300px; 
     width: 380px;
+    max-width: 90%; /* Prevent panel from taking the whole screen */
     flex-shrink: 0;
     background-color: var(--bg-secondary);
     border-left: 1px solid var(--border-color);
     box-shadow: -5px 0 25px var(--shadow-color);
-    transition: width 0.3s ease-in-out, border-left-width 0.3s ease-in-out; /* <-- FIX: Added transition for border */
+    transition: width 0.3s ease-in-out, border-left-width 0.3s ease-in-out, min-width 0.3s ease-in-out;
     display: flex;
 }
 
 .controls.collapsed {
     width: 0;
-    border-left-width: 0; /* <-- FIX: Collapse the border as well */
-    /* overflow: hidden; <-- FIX: This was the problem, so it's removed. */
+    min-width: 0;
+    border-left-width: 0;
 }
 
 .controls-content {
@@ -254,6 +261,20 @@ select:focus, textarea:focus {
      background: var(--accent-secondary);
 }
 
+.resize-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    transform: translateX(-50%);
+    z-index: 100; /* Above the panel content but below the collapse button */
+}
+
+.resize-handle:hover {
+    background: rgba(0, 170, 255, 0.2);
+}
 
 /* --- Collapse Button --- */
 #collapseButton {

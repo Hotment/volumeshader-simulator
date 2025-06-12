@@ -610,7 +610,74 @@ document.getElementById("collapseButton").addEventListener("click", () => {
 
     panel.classList.toggle("collapsed");
     btn.classList.toggle("collapsed", panel.classList.contains("collapsed"));
+
+    // If we are expanding the panel, restore its width
+    if (!panel.classList.contains("collapsed")) {
+        const savedWidth = localStorage.getItem('panelWidth');
+        panel.style.width = savedWidth ? savedWidth : '380px';
+    }
 });
+
+function handlePanelResize() {
+    const handle = document.querySelector('.resize-handle');
+    const panel = document.getElementById('right-panel');
+    const body = document.body;
+
+    let animationFrameId = null;
+
+    handle.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        body.classList.add('is-resizing');
+
+        const startX = e.clientX;
+        const startWidth = parseInt(window.getComputedStyle(panel).width, 10);
+        let targetWidth = startWidth; // This will hold the desired width
+
+        // This function ONLY calculates the new width and stores it. No DOM changes here.
+        function doDrag(e) {
+            targetWidth = startWidth - (e.clientX - startX);
+        }
+
+        function stopDrag() {
+            body.classList.remove('is-resizing');
+            
+            // Stop the animation loop
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            // Ensure the final width is applied and save it
+            panel.style.width = `${targetWidth}px`;
+            localStorage.setItem('panelWidth', panel.style.width);
+
+            // Update the textarea's max height after resizing is complete
+            updateTextareaMaxHeight();
+            
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        // The animation loop that actually updates the panel's width
+        function renderLoop() {
+            // Apply constraints within the loop
+            const minWidth = 300;
+            const maxWidth = window.innerWidth * 0.9;
+            const constrainedWidth = Math.max(minWidth, Math.min(targetWidth, maxWidth));
+            
+            panel.style.width = `${constrainedWidth}px`;
+            
+            // Continue the loop
+            animationFrameId = requestAnimationFrame(renderLoop);
+        }
+
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+        
+        // Start the animation loop
+        renderLoop();
+    });
+}
 
 function draw() {
     updateFPS();
@@ -777,6 +844,12 @@ window.onload = function () {
     document.getElementById("cancle").addEventListener("click", function() {
         document.getElementById("kernel").value = KERNEL;
     });
+
+    const savedWidth = localStorage.getItem('panelWidth');
+    if (savedWidth) {
+        document.getElementById('right-panel').style.width = savedWidth;
+    }
+    handlePanelResize();
 
     updateTextareaMaxHeight();
     setTimeout(updateTextareaMaxHeight, 500);
