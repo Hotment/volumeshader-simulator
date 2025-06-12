@@ -59,6 +59,7 @@ canvas {
 
 body.is-resizing {
     cursor: col-resize;
+    -webkit-user-select: none;
     user-select: none;
 }
 
@@ -307,6 +308,7 @@ select:focus, textarea:focus {
     top: 1rem;
     left: 1rem;
     background: rgba(18, 20, 23, 0.7);
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     padding: 0.5rem 1rem;
     border-radius: 6px;
