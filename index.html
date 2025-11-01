@@ -1,58 +1,147 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>WebGL Raymarcher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-   <div id="fpsCounter">FPS: 0 | Avg: 0 | 1% Low: 0</div>
+    <div id="fpsCounter">FPS: <span>0</span> | Avg: <span>0</span> | 1% Low: <span>0</span></div>
    
-   <div class="main-container">
-    <div class="render-area">
-        <canvas id="c1" width="1024" height="1024"></canvas>
-    </div>
+    <div class="main-container">
+        <div class="render-area">
+            <canvas id="c1" width="1024" height="1024"></canvas>
+        </div>
 
-    <div class="controls" id="right-panel">
-        <div class="resize-handle"></div>
-        
-        <button id="collapseButton" title="Toggle Menu">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        </button>
-        <div class="controls-content">
-            <h1 class="panel-title">WebGL Raymarcher</h1>
-            
-            <div class="control-section">
-                <h2>Shader Kernel</h2>
-                <textarea id="kernel" spellcheck="false" placeholder="Type your GLSL kernel code here..."></textarea>
-                <div class="kernel-buttons">
-                    <button id="apply">Apply Kernel</button>
-                    <button id="cancle" class="btn-secondary">Reset</button>
+        <div class="controls" id="right-panel">
+            <div class="resize-handle"></div>
+            <button id="togglePanelBtn" title="Toggle Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <div class="controls-content">
+                <div class="header-buttons">
+                    <h1 class="panel-title">Raymarcher</h1>
+                    <div class="icon-buttons">
+                        <button id="helpBtn" class="btn-secondary btn-icon" title="Help">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="control-section">
-                <h2>Live Presets</h2>
-                <div class="preset-controls">
-                    <select id="presetList" title="Preset">
-                        <option disabled selected>Select a preset to apply</option>
-                    </select>
-                    <button id="deletePreset" class="btn-secondary">Delete</button>
+                <div class="control-section editor-area">
+                    <h2>Shader Kernel</h2>
+                    <div id="editor-container"></div>
+                    <div id="error-console"></div>
+                    
+                    <div class="kernel-buttons">
+                        <button id="apply" title="Compile and run the shader (Ctrl+S)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            <span>Apply Kernel</span>
+                        </button>
+                        <button id="cancel" class="btn-secondary" title="Revert to last applied kernel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            <span>Reset</span>
+                        </button>
+                    </div>
+                    <label class="checkbox-container" for="autoApply" title="Automatically apply changes after you stop typing">
+                        <input type="checkbox" id="autoApply">
+                        <span class="checkbox-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </span>
+                        Auto-apply on edit
+                    </label>
                 </div>
-                <button id="savePreset" class="btn-full-width">Save Current as Preset</button>
-            </div>
 
-            <div class="control-section">
-                <h2>Controls</h2>
-                <button id="toggleRender" class="start">Start Rendering</button>
-                <label for="rotationSpeed">Rotation Speed: <span id="speedValue">50</span></label>
-                <input type="range" id="rotationSpeed" min="0" max="100" value="50" title="Rotation Speed">
+                <div class="control-section">
+                    <h2>Live Presets</h2>
+                    <div class="preset-controls">
+                        <select id="presetList" title="Preset">
+                            <option disabled selected>Select a preset to apply</option>
+                        </select>
+                        <button id="deletePresetBtn" class="btn-secondary btn-icon" title="Delete selected preset">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
+                    <button id="savePresetBtn" class="btn-full-width">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <span>Save Current as Preset</span>
+                    </button>
+                </div>
+
+                <div class="control-section">
+                    <h2>Controls</h2>
+                    <button id="toggleRender">
+                        <svg id="render-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        <span id="render-text">Pause Rendering</span>
+                    </button>
+                    <label class="slider-label" for="rotationSpeed">
+                        <span>Rotation Speed</span>
+                        <span id="speedValue">50</span>
+                    </label>
+                    <input type="range" id="rotationSpeed" min="0" max="100" value="50" title="Rotation Speed">
+                </div>
             </div>
         </div>
     </div>
-   </div>
+    <div id="toast-container"></div>
+    <div id="saveModal" class="modal-backdrop">
+        <div class="modal">
+            <h2 class="modal-title">Save Preset</h2>
+            <div class="modal-content">
+                <p>Enter a name for this preset:</p>
+                <input type="text" id="presetNameInput" class="modal-input" placeholder="e.g., 'My Cool Fractal'">
+            </div>
+            <div class="modal-buttons">
+                <button id="cancelSaveBtn" class="btn-secondary">Cancel</button>
+                <button id="confirmSaveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="deleteModal" class="modal-backdrop">
+        <div class="modal">
+            <h2 class="modal-title">Confirm Deletion</h2>
+            <div class="modal-content">
+                <p>Are you sure you want to delete the preset "<strong id="presetToDeleteName"></strong>"? This action cannot be undone.</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+                <button id="confirmDeleteBtn" class="btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="helpModal" class="modal-backdrop">
+        <div class="modal">
+            <h2 class="modal-title">Controls</h2>
+            <div class="modal-content">
+                <strong>Desktop:</strong>
+                <ul>
+                    <li><kbd>Left-click + Drag</kbd><span>Rotate camera</span></li>
+                    <li><kbd>Right-click + Drag</kbd><span>Pan camera</span></li>
+                    <li><kbd>Mouse Wheel</kbd><span>Zoom in/out</span></li>
+                    <li><kbd>Ctrl + S</kbd><span>Apply shader kernel</span></li>
+                </ul>
+                <br>
+                <strong>Mobile:</strong>
+                <ul>
+                    <li><kbd>One Finger Drag</kbd><span>Rotate camera</span></li>
+                    <li><kbd>Two Finger Drag</kbd><span>Pan camera</span></li>
+                    <li><kbd>Two Finger Pinch</kbd><span>Zoom in/out</span></li>
+                </ul>
+            </div>
+            <div class="modal-buttons">
+                <button id="closeHelpBtn">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    
     <script src="main.js"></script>
 </body>
 </html>
