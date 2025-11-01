@@ -626,9 +626,122 @@ function initMonaco() {
 
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
     require(['vs/editor/editor.main'], function(monaco) {
+        monaco.languages.register({ id: 'glsl' });
+
+        monaco.languages.setLanguageConfiguration('glsl', {
+            comments: {
+                lineComment: '//',
+                blockComment: ['/*', '*/']
+            },
+            brackets: [
+                ['{', '}'],
+                ['[', ']'],
+                ['(', ')']
+            ],
+            autoClosingPairs: [
+                { open: '{', close: '}' },
+                { open: '[', close: ']' },
+                { open: '(', close: ')' },
+                { open: '"', close: '"', notIn: ['string'] },
+                { open: "'", close: "'", notIn: ['string', 'comment'] }
+            ],
+            surroundingPairs: [
+                { open: '{', close: '}' },
+                { open: '[', close: ']' },
+                { open: '(', close: ')' },
+                { open: '"', close: '"' },
+                { open: "'", close: "'" }
+            ]
+        });
+
+        monaco.languages.setMonarchTokensProvider('glsl', {
+            keywords: [
+                'for', 'if', 'else', 'while', 'do', 'return', 'break', 'continue', 'struct',
+                'const', 'uniform', 'varying', 'attribute', 'layout', 'in', 'out', 'inout',
+                'precision', 'highp', 'mediump', 'lowp', 'discard'
+            ],
+            types: [
+                'void', 'bool', 'int', 'uint', 'float', 'double',
+                'vec2', 'vec3', 'vec4', 'bvec2', 'bvec3', 'bvec4',
+                'ivec2', 'ivec3', 'ivec4', 'uvec2', 'uvec3', 'uvec4',
+                'mat2', 'mat3', 'mat4', 'mat2x2', 'mat2x3', 'mat2x4',
+                'mat3x2', 'mat3x3', 'mat3x4', 'mat4x2', 'mat4x3', 'mat4x4',
+                'sampler2D', 'samplerCube', 'sampler3D', 'sampler2DShadow'
+            ],
+            builtInFunctions: [
+                'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
+                'pow', 'exp', 'log', 'exp2', 'log2', 'sqrt', 'inversesqrt',
+                'abs', 'sign', 'floor', 'ceil', 'fract', 'mod', 'min', 'max', 'clamp', 'mix', 'step', 'smoothstep',
+                'length', 'distance', 'dot', 'cross', 'normalize', 'faceforward', 'reflect', 'refract',
+                'matrixCompMult', 'outerProduct', 'transpose', 'determinant', 'inverse',
+                'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'any', 'all', 'not',
+                'texture2D', 'textureCube', 'texture', 'textureProj', 'textureLod', 'textureOffset', 'texelFetch'
+            ],
+            builtInVariables: [
+                'gl_Position', 'gl_FragColor', 'gl_FragCoord', 'gl_PointCoord', 'gl_PointSize', 'gl_FragData',
+                'gl_FrontFacing', 'gl_VertexID', 'gl_InstanceID'
+            ],
+            operators: [
+                '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=', '&&', '||', '++', '--',
+                '+', '-', '*', '/', '&', '|', '^', '%', '<<', '>>', '+=', '-=', '*=', '/=',
+                '&=', '|=', '^=', '%=', '<<=', '>>='
+            ],
+
+            symbols:  /[=><!~?:&|+\-*\/\^%]+/,
+
+            tokenizer: {
+                root: [
+                    [/[a-zA-Z_]\w*(?=\s*\()/, 'entity.name.function'],
+                    [/[a-zA-Z_]\w*/, {
+                        cases: {
+                            '@keywords': 'keyword',
+                            '@types': 'type.identifier',
+                            '@builtInFunctions': 'keyword.function',
+                            '@builtInVariables': 'variable.predefined',
+                            '@default': 'identifier'
+                        }
+                    }],
+                    { include: '@whitespace' },
+                    [/^#\s*[a-zA-Z_]\w*/, 'keyword.directive'],
+                    [/[{}()\[\]]/, '@brackets'],
+
+                    [/@symbols/, {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': ''
+                        }
+                    }],
+                    // numbers
+                    [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                    [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                    [/\d+/, 'number'],
+                    // delimiter
+                    [/[;,]/, 'delimiter'],
+                    // strings
+                    [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
+                    [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+                ],
+                comment: [
+                    [/[^\/*]+/, 'comment'],
+                    [/\*\//, 'comment', '@pop'],
+                    [/[\/*]/, 'comment']
+                ],
+                string: [
+                    [/[^\\"]+/, 'string'],
+                    [/\\./, 'string.escape.invalid'],
+                    [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+                ],
+                whitespace: [
+                    [/[ \t\r\n]+/, 'white'],
+                    [/\/\*/, 'comment', '@comment'],
+                    [/\/\/.*$/, 'comment'],
+                ],
+            }
+        });
+
         monacoEditor = monaco.editor.create(document.getElementById('editor-container'), {
             value: DEFAULT_KERNEL,
-            language: 'c', // 'glsl' isn't a built-in, but 'c' gives good-enough highlighting
+            language: 'glsl',
             theme: 'vs-dark',
             automaticLayout: true,
             minimap: { enabled: false },
