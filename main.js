@@ -739,10 +739,33 @@ function initMonaco() {
             }
         });
 
+        monaco.editor.defineTheme('glsl-theme', {
+            base: 'vs-dark',
+            inherit: true,
+            colors: {
+                'editor.background': '#1E1E1E',
+                'editor.foreground': '#D4D4D4',
+                'editorCursor.foreground': '#A7A7A7',
+                'editor.lineHighlightBackground': '#2A2A2A',
+                'editor.selectionBackground': '#062F4A',
+                'editorWidget.background': '#252526',
+                'editorWidget.border': '#454545',
+                'editorHoverWidget.background': '#252526',
+                'editorHoverWidget.border': '#454545'
+            },
+            rules: [
+                { token: 'keyword.function', foreground: 'DCDCAA' },
+                { token: 'entity.name.function', foreground: 'DCDCAA' },
+                { token: 'identifier', foreground: '9CDCFE' },
+                { token: 'type.identifier', foreground: '4EC9B0' },
+                { token: 'variable.predefined', foreground: 'C586C0' }
+            ]
+        });
+
         monacoEditor = monaco.editor.create(document.getElementById('editor-container'), {
             value: DEFAULT_KERNEL,
             language: 'glsl',
-            theme: 'vs-dark',
+            theme: 'glsl-theme',
             automaticLayout: true,
             minimap: { enabled: false },
             roundedSelection: true,
